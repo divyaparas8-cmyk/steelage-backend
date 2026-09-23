@@ -949,27 +949,25 @@ async function updateMeetingPreference(req, res) {
       const frontendUrl = process.env.FRONTEND_URL || 'https://aaa-crm-service.netlify.app';
       const rescheduleUrl = `${frontendUrl}/#/public/lead-form?reschedule=true&consultationId=${consultation.id}`;
       const cancelUrl = `${frontendUrl}/#/public/lead-form?cancel=true&consultationId=${consultation.id}`;
-      const packagesUrl = "https://aaabusinessconsultancy.com/services-and-packages/";
 
       const clientFullName = `${clientObj.firstName || ''} ${clientObj.lastName || ''}`.trim() || 'Client';
       const targetPhone = phone || clientObj.phone || clientObj.lead?.phone;
       const targetEmail = email || clientObj.email || clientObj.lead?.email;
 
-      const waMsg = `✈️ *Spain Visa Follow-up Consultation Confirmed!*
+      const waMsg = `🏗️ *Steelage Construction Consultation Confirmed!*
 
 Dear *${clientFullName}*,
 
-Thank you for rebooking your consultation meeting with *AAA Business Consultancy*! 🎉
+Thank you for scheduling your consultation meeting with *STEELAGE CONSTRUCTION*! 🎉
 
 📅 *Date:* ${formattedDate}
-⏰ *Time:* ${meetingPreferredTime} (UAE)
+⏰ *Time:* ${meetingPreferredTime}
 🔗 *Meeting Join Link:* ${meetingLink}
 
 ─────────────
 👇 *Quick Action Links:*
 • 🔄 *Reschedule Booking:* ${rescheduleUrl}
 • ❌ *Cancel Booking:* ${cancelUrl}
-• 📦 *View Visa Packages:* ${packagesUrl}
 
 _Note: Please join on time (within 10 minutes of appointment time to avoid automatic cancellation)._`;
 
@@ -1226,7 +1224,6 @@ async function syncLeadConsultation(leadId, reqApp = null) {
               const frontendUrl = process.env.FRONTEND_URL || 'https://aaa-crm-service.netlify.app';
               const rescheduleUrl = `${frontendUrl}/#/public/lead-form?reschedule=true&consultationId=${consultation.id}`;
               const cancelUrl = `${frontendUrl}/#/public/lead-form?cancel=true&consultationId=${consultation.id}`;
-              const packagesUrl = "https://aaabusinessconsultancy.com/services-and-packages/";
 
               const clientName = `${lead.firstName} ${lead.lastName}`.trim();
               const { getServiceTitleInfo } = require('../utils/serviceTitleHelper');
@@ -1236,17 +1233,16 @@ async function syncLeadConsultation(leadId, reqApp = null) {
 
 Dear *${clientName}*,
 
-Your Free ${svcInfo.assessmentName} with *AAA Business Consultancy* has been scheduled successfully! 🎉
+Your Free ${svcInfo.assessmentName} with *STEELAGE CONSTRUCTION* has been scheduled successfully! 🎉
 
 📅 *Date:* ${formattedDate}
-⏰ *Time:* ${meetingTime} (UAE)
+⏰ *Time:* ${meetingTime}
 🔗 *Meeting Join Link:* ${meetingLink}
 
 ─────────────
 👇 *Quick Action Links:*
 • 🔄 *Reschedule Booking:* ${rescheduleUrl}
 • ❌ *Cancel Booking:* ${cancelUrl}
-• 📦 *View Visa Packages:* ${packagesUrl}
 
 _Note: Please join within 10 minutes of appointment time to avoid automatic cancellation._`;
 
@@ -1315,13 +1311,13 @@ _Note: Please join within 10 minutes of appointment time to avoid automatic canc
               <li><b>Client Name:</b> ${clientName}</li>
               <li><b>Email:</b> ${lead.email || 'N/A'}</li>
               <li><b>Phone:</b> ${lead.phone || 'N/A'}</li>
-              <li><b>Service Category:</b> ${lead.serviceType || 'Spain Visa / Residency'}</li>
+              <li><b>Service Category:</b> ${lead.serviceType || 'Commercial & Steel Construction'}</li>
               <li><b>Date:</b> ${mDate}</li>
-              <li><b>Time:</b> ${mTime} (UAE)</li>
-              <li><b>Zoom Link:</b> <a href="${mLink}">${mLink}</a></li>
+              <li><b>Time:</b> ${mTime}</li>
+              <li><b>Meeting Link:</b> <a href="${mLink}">${mLink}</a></li>
             </ul>
             <br/>
-            <p><b>AAA Business Consultancy CRM System</b></p>
+            <p><b>Steelage Construction CRM System</b></p>
           </div>
         `
       })

@@ -408,19 +408,19 @@ const autoConvertLeadToClient = async (leadId) => {
         const { sendEmail } = require('../services/emailService');
         sendEmail({
           to: clientRecord.email,
-          subject: 'Welcome to AAA Business Consultancy - Your Client Portal is Ready! ✈️',
+          subject: 'Welcome to STEELAGE CONSTRUCTION - Your Client Portal is Ready! 🏗️',
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #2d3748;">
-              <h2 style="color: #4f46e5;">Welcome to AAA Business Consultancy! 🎉</h2>
+              <h2 style="color: #4f46e5;">Welcome to STEELAGE CONSTRUCTION! 🎉</h2>
               <p>Dear <strong>${clientRecord.firstName} ${clientRecord.lastName}</strong>,</p>
-              <p>Congratulations! Based on your consultation assessment, you are <strong>ELIGIBLE</strong> for your Spain Visa / Residency package.</p>
+              <p>Congratulations! Based on your consultation assessment, your commercial project file has been initialized.</p>
               <div style="background: #f7fafc; border-left: 4px solid #4f46e5; padding: 16px; margin: 20px 0;">
                 <h4 style="margin: 0 0 8px; color: #4f46e5;">Your Portal Credentials</h4>
                 <p><strong>Portal URL:</strong> <a href="${portalUrl}">${portalUrl}</a></p>
                 <p><strong>Username:</strong> ${clientRecord.email}</p>
                 <p><strong>Temporary Password:</strong> <code style="background: #edf2f7; padding: 2px 6px; color: #e11d48;">${plainPassword}</code></p>
               </div>
-              <p>Please log in to select your preferred package and complete your application.</p>
+              <p>Please log in to review your project scope and blueprints.</p>
             </div>
           `
         }).catch(err => console.error('[Auto-Convert Email Error]:', err.message));
@@ -435,7 +435,7 @@ const autoConvertLeadToClient = async (leadId) => {
         const { sendCustomWhatsApp } = require('../services/chatbotService');
         const activeNote = (lead?.notes || clientRecord?.profileSummary || clientRecord?.aiNotes || '').trim();
         const noteSection = activeNote ? `\n\n📝 *Note:* ${activeNote}` : '';
-        const credsMsg = `Hello *${clientRecord.firstName} ${clientRecord.lastName}*, welcome to AAA Business Consultancy! 🇪🇸\n\nYour Spain Relocation profile has been initialized. 🎉\n\n🔑 *Client Portal Login Credentials:*\n🔗 *Login URL:* ${portalUrl}\n👤 *Username:* ${clientRecord.email}\n🔑 *Temp Password:* ${plainPassword}\n\n📦 *Service Packages:*\nYou can log in to your Client Portal using the link above to view all residency packages, select the package that best fits your needs, and complete your payment.${noteSection}\n\n📅 *Need to book another consultation?*\nSimply reply with "rebook" in this chat, and we'll send you a new meeting booking link.\n\nThank you for choosing AAA Business Consultancy!`;
+        const credsMsg = `Hello *${clientRecord.firstName} ${clientRecord.lastName}*, welcome to STEELAGE CONSTRUCTION! 🏗️\n\nYour Project Profile has been initialized. 🎉\n\n🔑 *Client Portal Login Credentials:*\n🔗 *Login URL:* ${portalUrl}\n👤 *Username:* ${clientRecord.email}\n🔑 *Temp Password:* ${plainPassword}\n\n📦 *Project Scope:*\nYou can log in to your Client Portal using the link above to review your project proposals, contracts, and milestone tracking.${noteSection}\n\n📅 *Need to book another consultation?*\nSimply reply with "rebook" in this chat, and we'll send you a new meeting booking link.\n\nThank you for choosing STEELAGE CONSTRUCTION!`;
 
         await sendCustomWhatsApp(clientRecord.phone, credsMsg).catch(err => console.error('[Auto-Convert WA Creds Error]:', err.message));
         console.log(`[Auto-Convert WA Creds Sent] Dispatched WhatsApp credentials message to ${clientRecord.phone}`);
@@ -784,19 +784,19 @@ const updateOutcome = async (req, res) => {
           const rebookUrl = `${frontendUrl}/#/public/lead-form?reschedule=true&consultationId=${consultation.id}`;
           const clientName = `${updatedLead.firstName || ''} ${updatedLead.lastName || ''}`.trim() || 'Valued Client';
 
-          const waMsg = `🔓 *AAA Business Consultancy - Access Restored!*
+          const waMsg = `🔓 *STEELAGE CONSTRUCTION - Access Restored!*
 
 Dear *${clientName}*,
 
 Your account has been unblocked by our team! 🎉
 
-You can now select a new date and time slot for your Spain Visa Consultation using the link below:
+You can now select a new date and time slot for your Construction Consultation using the link below:
 
 📅 *Book New Appointment Slot:*
 ${rebookUrl}
 
 We look forward to assisting you!
-_AAA Business Consultancy_`;
+_STEELAGE CONSTRUCTION_`;
 
           const { sendCustomWhatsApp } = require('../services/chatbotService');
           await sendCustomWhatsApp(updatedLead.phone, waMsg);
@@ -1135,7 +1135,6 @@ async function sendConsultationNotifications(consultation) {
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     const rescheduleUrl = `${frontendUrl}/#/public/lead-form?reschedule=true&consultationId=${consultation.id}`;
     const cancelUrl = `${frontendUrl}/#/public/lead-form?cancel=true&consultationId=${consultation.id}`;
-    const packagesUrl = "https://aaabusinessconsultancy.com/services-and-packages/";
 
     // 1. Send WhatsApp Message
     try {
@@ -1147,17 +1146,16 @@ async function sendConsultationNotifications(consultation) {
 
 Dear *${name}*,
 
-Your Free ${svcInfo.assessmentName} with *AAA Business Consultancy* has been scheduled successfully! 🎉
+Your Free ${svcInfo.assessmentName} with *STEELAGE CONSTRUCTION* has been scheduled successfully! 🎉
 
 📅 *Date:* ${date}
-⏰ *Time:* ${time} (UAE)
+⏰ *Time:* ${time}
 🔗 *Meeting Join Link:* ${link}
 
 ─────────────
 👇 *Quick Action Links:*
 • 🔄 *Reschedule Booking:* ${rescheduleUrl}
 • ❌ *Cancel Booking:* ${cancelUrl}
-• 📦 *View Visa Packages:* ${packagesUrl}
 
 _Note: Please join within 10 minutes of appointment time to avoid automatic cancellation._`;
 
@@ -1561,7 +1559,6 @@ async function publicRescheduleConsultation(req, res) {
     const frontendUrl = process.env.FRONTEND_URL || 'https://aaa-crm-service.netlify.app';
     const rescheduleUrl = `${frontendUrl}/#/public/lead-form?reschedule=true&consultationId=${consultationId}`;
     const cancelUrl = `${frontendUrl}/#/public/lead-form?cancel=true&consultationId=${consultationId}`;
-    const packagesUrl = "https://aaabusinessconsultancy.com/services-and-packages/";
 
     // Send WhatsApp & Email Notifications
     if (phone) {
@@ -1574,17 +1571,16 @@ async function publicRescheduleConsultation(req, res) {
 
 Dear *${clientName}*,
 
-Your Free ${svcInfo.assessmentName} with *AAA Business Consultancy* has been scheduled successfully! 🎉
+Your Free ${svcInfo.assessmentName} with *STEELAGE CONSTRUCTION* has been scheduled successfully! 🎉
 
 📅 *Date:* ${formattedDate}
-⏰ *Time:* ${timeSlot} (UAE)
+⏰ *Time:* ${timeSlot}
 🔗 *Meeting Join Link:* ${link}
 
 ─────────────
 👇 *Quick Action Links:*
 • 🔄 *Reschedule Booking:* ${rescheduleUrl}
 • ❌ *Cancel Booking:* ${cancelUrl}
-• 📦 *View Visa Packages:* ${packagesUrl}
 
 _Note: Please join within 10 minutes of appointment time to avoid automatic cancellation._`;
 

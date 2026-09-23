@@ -481,7 +481,6 @@ exports.createEligibilityBooking = async (req, res) => {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const rescheduleUrl = `${frontendUrl}/#/public/lead-form?reschedule=true&consultationId=${consultation.id}`;
         const cancelUrl = `${frontendUrl}/#/public/lead-form?cancel=true&consultationId=${consultation.id}`;
-        const packagesUrl = "https://aaabusinessconsultancy.com/services-and-packages/";
 
         // 1 & 2. Send WhatsApp Message and Branded Email via centralized service
         try {
@@ -514,7 +513,7 @@ exports.createEligibilityBooking = async (req, res) => {
                   toEmail: email,
                   toPhone: phone,
                   subject: subject,
-                  emailHtml: `<h3>Meeting Reminder</h3><p>Dear ${firstName}, your Spain Visa Consultation is in ${textLabel}.</p><p>Zoom Join Link: <a href="${link}">${link}</a></p>`,
+                  emailHtml: `<h3>Meeting Reminder</h3><p>Dear ${firstName}, your Steelage Construction Consultation is in ${textLabel}.</p><p>Meeting Link: <a href="${link}">${link}</a></p>`,
                   whatsappTemplate: 'consultation_scheduled_confirmation',
                   whatsappComponents: [
                     {
@@ -535,9 +534,9 @@ exports.createEligibilityBooking = async (req, res) => {
               }
             };
 
-            await scheduleReminder('24h', 24 * 60 * 60 * 1000, 'Reminder: Spain Visa Consultation in 24 Hours', '24 Hours');
-            await scheduleReminder('1h', 1 * 60 * 60 * 1000, 'Reminder: Spain Visa Consultation in 1 Hour', '1 Hour');
-            await scheduleReminder('10m', 10 * 60 * 1000, 'Urgent Reminder: Spain Visa Consultation in 10 Minutes', '10 Minutes');
+            await scheduleReminder('24h', 24 * 60 * 60 * 1000, 'Reminder: Steelage Construction Consultation in 24 Hours', '24 Hours');
+            await scheduleReminder('1h', 1 * 60 * 60 * 1000, 'Reminder: Steelage Construction Consultation in 1 Hour', '1 Hour');
+            await scheduleReminder('10m', 10 * 60 * 1000, 'Urgent Reminder: Steelage Construction Consultation in 10 Minutes', '10 Minutes');
           }
         }
       } catch (err) {
