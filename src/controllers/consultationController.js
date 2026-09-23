@@ -35,7 +35,7 @@ function getSortableTimestamp(dateStr, timeSlotStr, status) {
 
 const getConsultations = async (req, res) => {
   try {
-    // Auto-sync any leads with meetingPreferredDate that don't have a Consultation row in DB yet
+    // Auto-sync any leads with meetingPreferredDate that don't have a Consultation row in DB yet or are stuck in Pending Zoom
     try {
       const leadsNeedingSync = await prisma.lead.findMany({
         where: {
@@ -49,6 +49,27 @@ const getConsultations = async (req, res) => {
         const { syncLeadConsultation } = require('./leadController');
         for (const l of leadsNeedingSync) {
           await syncLeadConsultation(l.id, req.app).catch(err => console.warn('[Auto-Sync] syncLeadConsultation error:', err.message));
+        }
+      }
+
+      // Auto-heal any consultations stuck in Pending Zoom or with null meetingLink
+      const stuckConsultations = await prisma.consultation.findMany({
+        where: {
+          OR: [
+            { status: 'Pending Zoom' },
+            { meetingLink: null }
+          ],
+          leadId: { not: null }
+        },
+        select: { leadId: true }
+      });
+
+      if (stuckConsultations.length > 0) {
+        const { syncLeadConsultation } = require('./leadController');
+        for (const c of stuckConsultations) {
+          if (c.leadId) {
+            await syncLeadConsultation(c.leadId, req.app).catch(err => console.warn('[Auto-Heal] syncLeadConsultation error:', err.message));
+          }
         }
       }
     } catch (autoSyncErr) {

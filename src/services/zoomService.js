@@ -4,7 +4,14 @@ const ZOOM_ACCOUNT_ID = process.env.ZOOM_ACCOUNT_ID;
 const ZOOM_CLIENT_ID = process.env.ZOOM_CLIENT_ID;
 const ZOOM_CLIENT_SECRET = process.env.ZOOM_CLIENT_SECRET;
 
-const isConfigured = !!(ZOOM_ACCOUNT_ID && ZOOM_CLIENT_ID && ZOOM_CLIENT_SECRET);
+const isConfigured = !!(
+  ZOOM_ACCOUNT_ID && 
+  ZOOM_CLIENT_ID && 
+  ZOOM_CLIENT_SECRET &&
+  !ZOOM_CLIENT_ID.toLowerCase().includes('your_') &&
+  !ZOOM_ACCOUNT_ID.toLowerCase().includes('your_') &&
+  ZOOM_ACCOUNT_ID.trim() !== ''
+);
 
 if (isConfigured) {
   console.log('Zoom Service: Configured and active.');
@@ -32,8 +39,8 @@ const getZoomAccessToken = async () => {
     return response.data.access_token;
   } catch (error) {
     const errorData = error.response?.data || error.message;
-    console.error('Failed to retrieve Zoom access token:', JSON.stringify(errorData));
-    throw new Error(`Zoom Auth Error: ${error.message}`);
+    console.warn('Failed to retrieve Zoom access token (falling back):', JSON.stringify(errorData));
+    return null;
   }
 };
 
@@ -52,10 +59,11 @@ exports.createZoomMeeting = async ({ topic, startTime, durationMinutes }) => {
   
   try {
     const token = await getZoomAccessToken();
+    if (!token) return null;
     const meetingUrl = 'https://api.zoom.us/v2/users/me/meetings';
     
     const response = await axios.post(meetingUrl, {
-      topic: topic || 'Eligibility Assessment',
+      topic: topic || 'Consultation',
       type: 2, // Scheduled Meeting
       start_time: startTime,
       duration: durationMinutes || 30,

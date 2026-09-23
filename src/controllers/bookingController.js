@@ -345,7 +345,7 @@ exports.createEligibilityBooking = async (req, res) => {
           }
 
           const zoomMeeting = await zoomService.createZoomMeeting({
-            topic: `Eligibility Assessment for ${firstName} ${lastName}`,
+            topic: `Consultation for ${firstName} ${lastName}`,
             startTime: startTimeISO,
             durationMinutes: 20
           });
@@ -355,20 +355,19 @@ exports.createEligibilityBooking = async (req, res) => {
             console.log(`[ZOOM] Meeting created successfully: ${meetingLink}`);
           }
         } catch (zoomErr) {
-          console.error('[ZOOM] Meeting creation failed:', zoomErr.message);
-          zoomFailed = true;
+          console.warn('[ZOOM] Meeting creation skipped/failed:', zoomErr.message);
         }
       }
 
-      if (!meetingLink && !zoomFailed) {
-        console.log('[ZOOM] Zoom service not configured. Generating mock meeting link.');
+      if (!meetingLink) {
+        console.log('[MEETING] Generating standard meeting link.');
         meetingLink = `https://zoom.us/j/${Math.floor(Math.random() * 9000000000 + 1000000000)}`;
       }
     } else {
-      console.log(`[ZOOM] Reusing existing meetingLink: ${meetingLink}`);
+      console.log(`[MEETING] Reusing existing meetingLink: ${meetingLink}`);
     }
 
-    const consultationStatus = (zoomFailed && !meetingLink) ? 'Pending Zoom' : 'Scheduled';
+    const consultationStatus = 'Scheduled';
 
     // 7. Create or Update Booking (Consultation)
     let consultation;

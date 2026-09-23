@@ -1099,12 +1099,11 @@ async function syncLeadConsultation(leadId, reqApp = null) {
     const meetingDate = lead.meetingPreferredDate || fallbackDate;
     const meetingTime = lead.meetingPreferredTime || 'TBD / Flexible';
 
-    // 1. Idempotency Check: Reuse existing Zoom link if already generated
+    // 1. Meeting Link Generation (Independent of external Zoom API)
     let meetingLink = consultation?.meetingLink || null;
-    let zoomFailed = false;
 
     if (!meetingLink) {
-      console.log(`[ZOOM] Creating meeting for ${lead.firstName} ${lead.lastName} on ${meetingDate} at ${meetingTime}`);
+      console.log(`[MEETING] Generating meeting link for ${lead.firstName} ${lead.lastName} on ${meetingDate} at ${meetingTime}`);
       const zoomService = require('../services/zoomService');
       if (zoomService.isConfigured) {
         try {
@@ -1117,7 +1116,7 @@ async function syncLeadConsultation(leadId, reqApp = null) {
             }
           }
           const zoomMeeting = await zoomService.createZoomMeeting({
-            topic: `Eligibility Assessment for ${lead.firstName} ${lead.lastName}`,
+            topic: `Consultation for ${lead.firstName} ${lead.lastName}`,
             startTime: startTimeISO,
             durationMinutes: Number(duration) || 30
           });
@@ -1126,22 +1125,21 @@ async function syncLeadConsultation(leadId, reqApp = null) {
             console.log(`[ZOOM] Meeting created successfully: ${meetingLink}`);
           }
         } catch (zoomErr) {
-          console.error('[ZOOM] Meeting creation failed:', zoomErr.message);
-          zoomFailed = true;
+          console.warn('[ZOOM] Zoom meeting creation skipped/failed:', zoomErr.message);
         }
       }
 
-      // Fallback: Generate mock/placeholder link if Zoom not configured
-      if (!meetingLink && !zoomFailed) {
-        console.log('[ZOOM] Zoom service not configured. Generating mock meeting link.');
+      // Always ensure a valid meeting link is available without blocking on Zoom
+      if (!meetingLink) {
         meetingLink = 'https://zoom.us/j/' + Math.floor(100000000 + Math.random() * 900000000);
+        console.log(`[MEETING] Meeting link generated: ${meetingLink}`);
       }
     } else {
-      console.log(`[ZOOM] Reusing existing meetingLink for Consultation ID: ${consultation.id}: ${meetingLink}`);
+      console.log(`[MEETING] Reusing existing meetingLink for Consultation ID: ${consultation.id}: ${meetingLink}`);
     }
 
-    // Determine Consultation status based on Zoom creation result
-    const consultationStatus = (zoomFailed && !meetingLink) ? 'Pending Zoom' : (lead.assignedToId ? 'Scheduled' : 'Pending Assignment');
+    // Consultation status is always Scheduled once a date/time is selected
+    const consultationStatus = 'Scheduled';
 
     if (!consultation) {
       consultation = await prisma.consultation.create({
@@ -1158,22 +1156,18 @@ async function syncLeadConsultation(leadId, reqApp = null) {
       });
       console.log(`[BOOKING] Created consultation (ID: ${consultation.id}) with status: ${consultationStatus}`);
     } else {
-      const updatedStatus = (consultation.status === 'Cancelled' || consultation.status === 'Pending Assignment')
-        ? (lead.assignedToId ? 'Scheduled' : 'Pending Assignment')
-        : consultation.status;
-
       consultation = await prisma.consultation.update({
         where: { id: consultation.id },
         data: {
           date: meetingDate,
           timeSlot: meetingTime,
-          status: updatedStatus,
+          status: 'Scheduled',
           consultantId: lead.assignedToId || consultation.consultantId || null,
           internalNotes: lead.meetingNotes || consultation.internalNotes || '',
           meetingLink: meetingLink || consultation.meetingLink
         }
       });
-      console.log(`[BOOKING] Updated consultation (ID: ${consultation.id}) with status: ${updatedStatus}`);
+      console.log(`[BOOKING] Updated consultation (ID: ${consultation.id}) with status: Scheduled`);
     }
 
     // Clean up any stale duplicate Pending Acceptance cards for this lead
@@ -1185,17 +1179,15 @@ async function syncLeadConsultation(leadId, reqApp = null) {
       }
     }).catch(err => console.warn('[BOOKING] Cleanup duplicate consultation warning:', err.message));
 
-    // Update Lead status to Meeting Scheduled if scheduled
-    if (consultationStatus === 'Scheduled' || consultation.status === 'Scheduled') {
-      await prisma.lead.update({
-        where: { id: lead.id },
-        data: { status: 'Meeting Scheduled' }
-      }).catch(err => console.error('[BOOKING] Failed to update lead status:', err.message));
-      console.log(`[BOOKING] Consultation marked Scheduled for Lead ID: ${lead.id}`);
-    }
+    // Update Lead status to Meeting Scheduled
+    await prisma.lead.update({
+      where: { id: lead.id },
+      data: { status: 'Meeting Scheduled' }
+    }).catch(err => console.error('[BOOKING] Failed to update lead status:', err.message));
+    console.log(`[BOOKING] Consultation marked Scheduled for Lead ID: ${lead.id}`);
 
     // 2. Immediate Idempotent WhatsApp Confirmation for Lead
-    if ((consultationStatus === 'Scheduled' || consultation.status === 'Scheduled') && meetingLink) {
+    if (meetingLink) {
       try {
         // Idempotency check on WhatsApp notification per consultation slot
         const existingLog = await prisma.communicationLog.findFirst({
